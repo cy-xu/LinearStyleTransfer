@@ -56,7 +56,7 @@ elif(opt.layer == 'r41'):
     vgg = encoder4()
     dec = decoder4()
 vgg.load_state_dict(torch.load(opt.vgg_dir))
-dec.load_state_dict(torch.load(opt.dec_dir))
+dec.load_state_dict(torch.load(opt.decoder_dir))
 matrix.load_state_dict(torch.load(opt.matrixPath))
 for param in vgg.parameters():
     param.requires_grad = False
@@ -93,26 +93,27 @@ with torch.no_grad():
 
 while(True):
     ret,frame = cap.read()
-    frame = cv2.resize(frame,(512,256),interpolation=cv2.INTER_CUBIC)
-    frame = frame.transpose((2,0,1))
-    frame = frame[::-1,:,:]
-    frame = frame/255.0
-    frame = torch.from_numpy(frame.copy()).unsqueeze(0)
-    content.data.resize_(frame.size()).copy_(frame)
-    with torch.no_grad():
-        cF = vgg(content)
-        if(opt.layer == 'r41'):
-            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
-        else:
-            feature,transmatrix = matrix(cF,sF)
-        transfer = dec(feature)
-    transfer = transfer.clamp(0,1).squeeze(0).data.cpu().numpy()
-    transfer = transfer.transpose((1,2,0))
-    transfer = transfer[...,::-1]
-    out.write(np.uint8(transfer*255))
-    cv2.imshow('frame',transfer)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    if ret:
+        frame = cv2.resize(frame,(512,256),interpolation=cv2.INTER_CUBIC)
+        frame = frame.transpose((2,0,1))
+        frame = frame[::-1,:,:]
+        frame = frame/255.0
+        frame = torch.from_numpy(frame.copy()).unsqueeze(0)
+        content.data.resize_(frame.size()).copy_(frame)
+        with torch.no_grad():
+            cF = vgg(content)
+            if(opt.layer == 'r41'):
+                feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
+            else:
+                feature,transmatrix = matrix(cF,sF)
+            transfer = dec(feature)
+        transfer = transfer.clamp(0,1).squeeze(0).data.cpu().numpy()
+        transfer = transfer.transpose((1,2,0))
+        transfer = transfer[...,::-1]
+        out.write(np.uint8(transfer*255))
+        cv2.imshow('frame',transfer)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 # When everything done, release the capture
 out.release()
