@@ -16,17 +16,17 @@ parser.add_argument("--vgg_dir", default='models/vgg_r31.pth',
                     help='pre-trained encoder path')
 parser.add_argument("--decoder_dir", default='models/dec_r31.pth',
                     help='pre-trained decoder path')
-parser.add_argument("--matrixPath", default='models/r31.pth',
+parser.add_argument("--matrixPath", default='data/budapest/trainingOutput/r31.pth',
                     help='pre-trained model path')
-parser.add_argument("--stylePath", default="data/photo_real/style/images/",
+parser.add_argument("--stylePath", default="data/photo_real/style/images",
                     help='path to style image')
 parser.add_argument("--styleSegPath", default="data/photo_real/styleSeg/",
                     help='path to style image masks')
-parser.add_argument("--contentPath", default="data/photo_real/content/images/",
+parser.add_argument("--contentPath", default="data/photo_real/content/images",
                     help='path to content image')
 parser.add_argument("--contentSegPath", default="data/photo_real/contentSeg/",
                     help='path to content image masks')
-parser.add_argument("--outf", default="PhotoReal/",
+parser.add_argument("--outf", default="data/photo_real/my_method_output/",
                     help='path to save output images')
 parser.add_argument("--batchSize", type=int,default=1,
                     help='batch size')
@@ -47,6 +47,9 @@ dataset = Dataset(opt.contentPath,opt.stylePath,opt.contentSegPath,opt.styleSegP
 loader = torch.utils.data.DataLoader(dataset=dataset,
                                      batch_size=1,
                                      shuffle=False)
+
+print('\n number of content images', len(dataset.image_list), '\n',
+      'first 3', dataset.image_list[:3], '\n')
 
 ################# MODEL #################
 if(opt.layer == 'r31'):
@@ -78,6 +81,7 @@ if(opt.cuda):
     styleV = styleV.cuda()
 
 for i,(contentImg,styleImg,cmasks,smasks,imname) in enumerate(loader):
+    # contentImgArbi.squeeze(0),styleImgArbi.squeeze(0),content_masks,style_masks,self.image_list[index]
     imname = imname[0]
     contentV.data.resize_(contentImg.size()).copy_(contentImg)
     styleV.data.resize_(styleImg.size()).copy_(styleImg)

@@ -86,6 +86,8 @@ class Dataset(data.Dataset):
     def __getitem__(self,index):
         contentImgPath = os.path.join(self.contentPath,self.image_list[index])
         styleImgPath = os.path.join(self.stylePath,self.image_list[index])
+        # chagne to adapt single style image for all content
+        # styleImgPath = os.path.join(self.stylePath, 'budapest_6866_crop.jpg')
         contentImg = default_loader(contentImgPath)
         styleImg = default_loader(styleImgPath)
 
